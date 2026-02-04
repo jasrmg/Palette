@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Palette.Api/Palette.Api.csproj" />
+    <Project Path="src/Palette.Application/Palette.Application.csproj" />
+    <Project Path="src/Palette.Domain/Palette.Domain.csproj" />
+    <Project Path="src/Palette.Infrastructure/Palette.Infrastructure.csproj" />
+  </Folder>
+</Solution>
