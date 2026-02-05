@@ -14,15 +14,13 @@ public class User
 
     private User() { } // EF Core
 
-    // amazonq-ignore-next-line
     public User(string email, string passwordHash, string firstName, string lastName)
     {
-        // amazonq-ignore-next-line
         if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email cannot be empty");
+        if (string.IsNullOrWhiteSpace(passwordHash)) throw new ArgumentException("Password hash cannot be empty");
         if (string.IsNullOrWhiteSpace(firstName)) throw new ArgumentException("First name cannot be empty");
         if (string.IsNullOrWhiteSpace(lastName)) throw new ArgumentException("Last name cannot be empty");
 
-        // amazonq-ignore-next-line
         Id = Guid.NewGuid();
         Email = email;
         PasswordHash = passwordHash;
