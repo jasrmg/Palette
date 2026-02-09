@@ -8,10 +8,11 @@ public class PaletteDbContext : DbContext
     public PaletteDbContext(DbContextOptions<PaletteDbContext> options) : base(options) { }
 
     public DbSet<User> Users { get; set; }
+    public DbSet<Listing> Listings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // amazonq-ignore-next-line
+        // user configuration
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -21,7 +22,20 @@ public class PaletteDbContext : DbContext
             entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
 
+        // listing configuration
+        modelBuilder.Entity<Listing>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.SellerId).IsRequired();
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.Property(e => e.PriceAmount).IsRequired();
+            entity.Property(e => e.Currency).IsRequired().HasMaxLength(3);
+            entity.Property(e => e.Quantity).IsRequired();
+            entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.CreatedAtUtc).IsRequired();
         });
     }
 }
