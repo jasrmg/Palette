@@ -2,6 +2,7 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Palette.Application.Dtos;
 using Palette.Application.Features.Listings.Commands;
 using Palette.Application.Features.Listings.Queries;
 using Palette.Domain.Entities; // will be replaced with app.dtos
@@ -86,7 +87,7 @@ public class ListingsController : ControllerBase
 
     // GET /api/listings/{id} - get listing by id
     [HttpGet("{id}")]
-    public async Task<ActionResult<Listing>> GetListingById(Guid id)
+    public async Task<ActionResult<ListingDto>> GetListingById(Guid id)
     {
         var query = new GetListingByIdQuery(id);
         var listing = await _mediator.Send(query);
@@ -99,7 +100,7 @@ public class ListingsController : ControllerBase
 
     // GET /api/listings/my?sellerId={sellerId} - get sellers listings
     [HttpGet("my")]
-    public async Task<ActionResult<List<Listing>>> GetMyListings([FromQuery] Guid sellerId)
+    public async Task<ActionResult<List<ListingDto>>> GetMyListings([FromQuery] Guid sellerId)
     {
         var query = new GetMyListingsQuery(sellerId);
         var listings = await _mediator.Send(query);
