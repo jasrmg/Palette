@@ -14,6 +14,7 @@ builder.Services.AddDbContext<PaletteDbContext>(options =>
 // repository services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IListingRepository, ListingRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 // application services
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();

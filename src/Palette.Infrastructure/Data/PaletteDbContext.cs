@@ -9,6 +9,8 @@ public class PaletteDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<Listing> Listings { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderItem> OrderItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,6 +38,35 @@ public class PaletteDbContext : DbContext
             entity.Property(e => e.Quantity).IsRequired();
             entity.Property(e => e.Status).IsRequired();
             entity.Property(e => e.CreatedAtUtc).IsRequired();
+        });
+
+        // order config
+        modelBuilder.Entity<Order>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.BuyerId).IsRequired();
+            entity.Property(e => e.SellerId).IsRequired();
+            entity.Property(e => e.Status).IsRequired();
+            entity.Property(e => e.TotalAmount).IsRequired();
+            entity.Property(e => e.Currency).IsRequired().HasMaxLength(3);
+            entity.Property(e => e.CreatedAtUtc).IsRequired();
+
+            // configure relationship with order items
+            entity.HasMany(o => o.Items)
+                .WithOne()
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // order item config
+        modelBuilder.Entity<OrderItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.OrderId).IsRequired();
+            entity.Property(e => e.ListingId).IsRequired();
+            entity.Property(e => e.TitleSnapshot).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.UnitPriceSnapshot).IsRequired();
+            entity.Property(e => e.LineTotal).IsRequired();
         });
     }
 }
