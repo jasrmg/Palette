@@ -106,4 +106,27 @@ public class ListingsController : ControllerBase
         var listings = await _mediator.Send(query);
         return Ok(listings);
     }
+    // GET /api/listings/browse - browse public listings with filters
+    [HttpGet("browse")]
+    public async Task<ActionResult<BrowseListingsResponse>> BrowseListings(
+        [FromQuery] string? searchTerm,
+        [FromQuery] long? minPrice,
+        [FromQuery] long? maxPrice,
+        [FromQuery] string? sortBy,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10
+    )
+    {
+        var query = new BrowseListingsQuery(
+            searchTerm,
+            minPrice,
+            maxPrice,
+            sortBy,
+            page,
+            pageSize
+        );
+
+        var response = await _mediator.Send(query);
+        return Ok(response);
+    }
 }

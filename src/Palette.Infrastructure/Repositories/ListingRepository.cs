@@ -46,4 +46,59 @@ public class ListingRepository : IListingRepository
         _context.Listings.Update(listing);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    // browse listings with filters, sorting and pagination
+    public async Task<(List<Listing> Items, int TotalCount)> BrowseAsync(
+        string? searchTerm,
+        long? minPrice,
+        long? maxPrice,
+        string? sortBy,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        // start with base query - only active listing
+        var query = _context.Listings
+            .Where(l => l.Status == ListingStatus.Active);
+
+        // apply search filter (title or description contains search term)
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(l =>
+                l.Title.Contains(searchTerm) ||
+                l.Description.Contains(searchTerm));
+        }
+
+        // apply price filters
+        if (minPrice.HasValue)
+        {
+            query = query.Where(l => l.PriceAmount >= minPrice.Value);
+        }
+        if (maxPrice.HasValue)
+        {
+            query = query.Where(l => l.PriceAmount <= maxPrice.Value);
+        }
+
+        // get total count before pagination
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // apply sorting
+        query = sortBy?.ToLower() switch
+        {
+            "price" => query.OrderBy(l => l.PriceAmount),
+            "price_desc" => query.OrderByDescending(l => l.PriceAmount),
+            _ => query.OrderByDescending(l => l.CreatedAtUtc) // default: newest first
+        };
+
+        // apply pagination
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
+
 }

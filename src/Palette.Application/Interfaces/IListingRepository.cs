@@ -18,4 +18,14 @@ public interface IListingRepository
     // update existing listing
     Task UpdateAsync(Listing listing, CancellationToken cancellationToken = default);
 
+    // method for browse/search
+    Task<(List<Listing> Items, int TotalCount)> BrowseAsync(
+        string? searchTerm,
+        long? minPrice,
+        long? maxPrice,
+        string? sortBy,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
 }
