@@ -11,6 +11,8 @@ public class PaletteDbContext : DbContext
     public DbSet<Listing> Listings { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
+    public DbSet<Conversation> Conversations { get; set; }
+    public DbSet<Message> Messages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -67,6 +69,33 @@ public class PaletteDbContext : DbContext
             entity.Property(e => e.TitleSnapshot).IsRequired().HasMaxLength(200);
             entity.Property(e => e.UnitPriceSnapshot).IsRequired();
             entity.Property(e => e.LineTotal).IsRequired();
+        });
+
+        // conversation config
+        modelBuilder.Entity<Conversation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.BuyerId).IsRequired();
+            entity.Property(e => e.SellerId).IsRequired();
+            entity.Property(e => e.ListingId);
+            entity.Property(e => e.LastMessageAtUtc).IsRequired();
+            entity.Property(e => e.CreatedAtUtc).IsRequired();
+
+            // relationship with messages
+            entity.HasMany(c => c.Messages)
+                .WithOne()
+                .HasForeignKey(m => m.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // message config
+        modelBuilder.Entity<Message>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ConversationId).IsRequired();
+            entity.Property(e => e.SenderId).IsRequired();
+            entity.Property(e => e.Body).IsRequired().HasMaxLength(2000);
+            entity.Property(e => e.SentAtUtc).IsRequired();
         });
     }
 }
