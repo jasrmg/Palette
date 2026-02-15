@@ -1,16 +1,17 @@
 
 
 using MediatR;
+using Palette.Application.Dtos;
 using Palette.Application.Interfaces;
-using Palette.Domain.Entities;
+using Palette.Application.Mappings;
 
 namespace Palette.Application.Features.Conversations.Queries;
 
 // query to get all conversations for a user (inbox)
-public record GetConversationQuery(Guid UserId) : IRequest<List<Conversation>>;
+public record GetConversationQuery(Guid UserId) : IRequest<List<ConversationDto>>;
 
 // handler for getting users conversations
-public class GetConversationQueryHandler : IRequestHandler<GetConversationQuery, List<Conversation>>
+public class GetConversationQueryHandler : IRequestHandler<GetConversationQuery, List<ConversationDto>>
 {
     private readonly IConversationRepository _conversationRepository;
 
@@ -19,18 +20,21 @@ public class GetConversationQueryHandler : IRequestHandler<GetConversationQuery,
         _conversationRepository = conversationRepository;
     }
 
-    public async Task<List<Conversation>> Handle(GetConversationQuery request, CancellationToken cancellationToken)
+    public async Task<List<ConversationDto>> Handle(GetConversationQuery request, CancellationToken cancellationToken)
     {
         // get all conversations where user is buyer or seller
-        return await _conversationRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+        var conversations = await _conversationRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+
+        // map to dtos
+        return conversations.ToDto();
     }
 }
 
 // query to get message in a specific conversation (thread)
-public record GetMessagesQuery(Guid ConversationId) : IRequest<List<Message>>;
+public record GetMessagesQuery(Guid ConversationId) : IRequest<List<MessageDto>>;
 
 // handler for getting messages
-public class GetMessagesQueryHandler : IRequestHandler<GetMessagesQuery, List<Message>>
+public class GetMessagesQueryHandler : IRequestHandler<GetMessagesQuery, List<MessageDto>>
 {
     private readonly IConversationRepository _conversationRepository;
 
@@ -39,7 +43,7 @@ public class GetMessagesQueryHandler : IRequestHandler<GetMessagesQuery, List<Me
         _conversationRepository = conversationRepository;
     }
 
-    public async Task<List<Message>> Handle(GetMessagesQuery request, CancellationToken cancellationToken)
+    public async Task<List<MessageDto>> Handle(GetMessagesQuery request, CancellationToken cancellationToken)
     {
         // get conversation with messages
         var conversation = await _conversationRepository.GetByIdAsync
@@ -49,6 +53,6 @@ public class GetMessagesQueryHandler : IRequestHandler<GetMessagesQuery, List<Me
             throw new InvalidOperationException("Conversation not found");
 
         // return messages as list
-        return conversation.Messages.ToList();
+        return conversation.Messages.Select(m => m.ToDto()).ToList();
     }
 }

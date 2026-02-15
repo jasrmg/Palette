@@ -1,16 +1,18 @@
 
 
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Palette.Application.Dtos;
 using Palette.Application.Features.Listings.Commands;
 using Palette.Application.Features.Listings.Queries;
-using Palette.Domain.Entities; // will be replaced with app.dtos
 
 namespace Palette.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ListingsController : ControllerBase
 {
     private readonly IMediator _mediator; // mediatr for sending commands
@@ -25,8 +27,14 @@ public class ListingsController : ControllerBase
     {
         try
         {
+            // get seller id from JWT token
+            var sellerId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            // create new command with authenticated user's id
+            var authenticatedCommand = command with { SellerId = sellerId };
+
             // send command to handler, get new listing id
-            var listingId = await _mediator.Send(command);
+            var listingId = await _mediator.Send(authenticatedCommand);
             return Ok(listingId);
         }
         catch (ArgumentException ex)
@@ -108,6 +116,7 @@ public class ListingsController : ControllerBase
     }
     // GET /api/listings/browse - browse public listings with filters
     [HttpGet("browse")]
+    [AllowAnonymous]
     public async Task<ActionResult<BrowseListingsResponse>> BrowseListings(
         [FromQuery] string? searchTerm,
         [FromQuery] long? minPrice,
