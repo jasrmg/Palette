@@ -70,12 +70,15 @@ public class ListingsController : ControllerBase
         }
     }
 
-    // DELETE /api.listings/{id} - deactivate listing
+    // DELETE /api/listings/{id} - deactivate listing
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeactivateListing(Guid id, [FromQuery] Guid sellerId)
+    public async Task<ActionResult> DeactivateListing(Guid id)
     {
         try
         {
+            // get sellerId from JWT token
+            var sellerId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
             // send command to handler
             var command = new DeactivateListingCommand(id, sellerId);
             await _mediator.Send(command);
@@ -108,8 +111,11 @@ public class ListingsController : ControllerBase
 
     // GET /api/listings/my?sellerId={sellerId} - get sellers listings
     [HttpGet("my")]
-    public async Task<ActionResult<List<ListingDto>>> GetMyListings([FromQuery] Guid sellerId)
+    public async Task<ActionResult<List<ListingDto>>> GetMyListings()
     {
+        // get sellerId from JWT token
+        var sellerId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
         var query = new GetMyListingsQuery(sellerId);
         var listings = await _mediator.Send(query);
         return Ok(listings);

@@ -1,6 +1,8 @@
 
 
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Palette.Application.Dtos;
 using Palette.Application.Features.Orders.Commands;
@@ -10,6 +12,7 @@ namespace Palette.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class OrdersController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -36,8 +39,11 @@ public class OrdersController : ControllerBase
 
     // GET /api/orders/my?buyerId={buyerId} - get buyers orders
     [HttpGet("my")]
-    public async Task<ActionResult<List<OrderDto>>> GetMyOrders([FromQuery] Guid buyerId)
+    public async Task<ActionResult<List<OrderDto>>> GetMyOrders()
     {
+        // get buyerid from jwt token
+        var buyerId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
         var query = new GetMyOrdersQuery(buyerId);
         var orders = await _mediator.Send(query);
         return Ok(orders);
@@ -45,8 +51,10 @@ public class OrdersController : ControllerBase
 
     // GET /api/orders/seller?sellerId={sellerId} - get sellers orders
     [HttpGet("seller")]
-    public async Task<ActionResult<List<OrderDto>>> GetSellerOrders([FromQuery] Guid sellerId)
+    public async Task<ActionResult<List<OrderDto>>> GetSellerOrders()
     {
+        // get seller id from jwt token
+        var sellerId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var query = new GetSellerOrdersQuery(sellerId);
         var orders = await _mediator.Send(query);
         return Ok(orders);

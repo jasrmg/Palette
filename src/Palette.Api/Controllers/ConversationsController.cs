@@ -1,16 +1,19 @@
 
 
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Palette.Application.Dtos;
 using Palette.Application.Features.Conversations.Commands;
 using Palette.Application.Features.Conversations.Queries;
-using Palette.Domain.Entities;
 
 namespace Palette.Api.Controllers;
 
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ConversationsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -31,21 +34,23 @@ public class ConversationsController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { MessageProcessingHandler = ex.Message });
+            return BadRequest(new { message = ex.Message });
         }
     }
 
     // GET /api/conversations?userId={userId} - get users conversation (inbox)
     [HttpGet]
-    public async Task<ActionResult<List<Conversation>>> GetConversations([FromQuery] Guid userId)
+    public async Task<ActionResult<List<ConversationDto>>> GetConversations()
     {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
         var query = new GetConversationQuery(userId);
         var conversations = await _mediator.Send(query);
         return Ok(conversations);
     }
     // GET /api/conversations/{id}/messages - get messages in conversation
     [HttpGet("{id}/messages")]
-    public async Task<ActionResult<Conversation>> GetMessages(Guid id)
+    public async Task<ActionResult<List<MessageDto>>> GetMessages(Guid id)
     {
         try
         {
