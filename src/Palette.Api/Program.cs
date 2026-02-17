@@ -3,7 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
+using Palette.Application.Behaviors;
 using Palette.Application.Features.Auth.Commands;
 using Palette.Application.Interfaces;
 using Palette.Infrastructure.Data;
@@ -32,7 +32,12 @@ builder.Services.AddScoped<IJwtTokenService>(provider =>
     ));
 
 // mediatr registration
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly));
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly);
+    cfg.AddOpenBehavior(typeof(ValidationBehaviors<,>));
+});
+
 
 // fluentvalidation registration
 builder.Services.AddValidatorsFromAssembly(typeof(RegisterUserCommand).Assembly);
